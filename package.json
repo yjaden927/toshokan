@@ -1,0 +1,11 @@
+{
+  "name": "toshokan",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=22"
+  }
+}
