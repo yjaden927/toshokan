@@ -1,11 +1,11 @@
 import request from "supertest";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-import { createApp } from "../app.js";
+import { createTestApp } from "../testing/app.js";
 import { createTestPrisma, resetDatabase } from "../testing/database.js";
 import { SESSION_COOKIE, hashToken } from "./sessions.js";
 
 const prisma = createTestPrisma();
-const app = createApp({ prisma, secureCookies: true });
+const app = createTestApp({ prisma });
 
 const credentials = { email: "reader@example.com", password: "correct horse battery" };
 
