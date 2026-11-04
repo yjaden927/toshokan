@@ -28,3 +28,24 @@ export function setSessionCookie(res: Response, token: string, secure: boolean) 
     maxAge: SESSION_TTL_MS,
   });
 }
+
+export function clearSessionCookie(res: Response, secure: boolean) {
+  res.clearCookie(SESSION_COOKIE, { httpOnly: true, secure, sameSite: "lax", path: "/" });
+}
+
+export async function findSessionUser(prisma: PrismaClient, token: string) {
+  const session = await prisma.session.findUnique({
+    where: { id: hashToken(token) },
+    select: { expiresAt: true, user: { select: { id: true, email: true, displayName: true } } },
+  });
+  if (!session) return null;
+  if (session.expiresAt <= new Date()) {
+    await prisma.session.deleteMany({ where: { id: hashToken(token) } });
+    return null;
+  }
+  return session.user;
+}
+
+export async function deleteSession(prisma: PrismaClient, token: string) {
+  await prisma.session.deleteMany({ where: { id: hashToken(token) } });
+}

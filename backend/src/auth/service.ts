@@ -1,5 +1,5 @@
 import { Prisma, type PrismaClient } from "../generated/prisma/client.js";
-import { hashPassword } from "./password.js";
+import { hashPassword, verifyPassword } from "./password.js";
 
 export const publicUser = { id: true, email: true, displayName: true } as const;
 
@@ -27,4 +27,20 @@ export async function signUp(
     }
     throw error;
   }
+}
+
+// Checked against when the email doesn't exist, so a login for an unknown account takes as
+// long as one with a wrong password and response times don't reveal which emails are registered.
+const unknownUserHash = hashPassword("password for an account that does not exist");
+
+export async function logIn(prisma: PrismaClient, input: { email: string; password: string }): Promise<AuthUser | null> {
+  const user = await prisma.user.findUnique({
+    where: { email: input.email },
+    select: { ...publicUser, passwordHash: true },
+  });
+  const valid = await verifyPassword(input.password, user?.passwordHash ?? (await unknownUserHash));
+  if (!user || !valid) return null;
+
+  const { passwordHash: _, ...rest } = user;
+  return rest;
 }
