@@ -1,0 +1,54 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  email        String   @unique @db.VarChar(254)
+  passwordHash String   @map("password_hash")
+  displayName  String   @default("") @map("display_name") @db.VarChar(80)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  books        Book[]
+
+  @@map("users")
+}
+
+enum ReadingStatus {
+  WANT_TO_READ @map("want_to_read")
+  READING      @map("reading")
+  FINISHED     @map("finished")
+
+  @@map("reading_status")
+}
+
+model Book {
+  id          String        @id @default(uuid(7)) @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String        @db.VarChar(200)
+  author      String        @db.VarChar(200)
+  year        Int?
+  genre       String        @default("Other") @db.VarChar(40)
+  status      ReadingStatus @default(WANT_TO_READ)
+  rating      Int?          @db.SmallInt
+  startedOn   DateTime?     @map("started_on") @db.Date
+  finishedOn  DateTime?     @map("finished_on") @db.Date
+  synopsis    String        @default("") @db.VarChar(3000)
+  notes       String        @default("") @db.VarChar(3000)
+  color       String        @db.VarChar(7)
+  coverUrl    String?       @map("cover_url") @db.VarChar(1000)
+  coverPicked Boolean       @default(false) @map("cover_picked")
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([userId, title, author])
+  @@index([userId, status])
+  @@map("books")
+}
