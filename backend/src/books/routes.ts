@@ -2,11 +2,18 @@ import { type Response, Router } from "express";
 import { z } from "zod";
 import { currentUser } from "../auth/middleware.js";
 import type { PrismaClient } from "../generated/prisma/client.js";
-import { createBookSchema, listQuerySchema, toBookResponse } from "./schema.js";
-import { DuplicateBookError, InvalidBookError, createBook, listBooks } from "./service.js";
+import { bookFields, createBookSchema, listQuerySchema, toBookResponse } from "./schema.js";
+import { DuplicateBookError, InvalidBookError, createBook, deleteBook, findBook, listBooks, updateBook } from "./service.js";
+
+const updateBookSchema = z.object(bookFields).partial().strict();
+const idSchema = z.uuid();
 
 function invalidInput(res: Response, error: z.ZodError) {
   res.status(400).json({ error: "invalid_input", fields: z.flattenError(error).fieldErrors });
+}
+
+function notFound(res: Response) {
+  res.status(404).json({ error: "not_found" });
 }
 
 function sendServiceError(res: Response, error: unknown) {
@@ -42,6 +49,39 @@ export function booksRouter({ prisma }: { prisma: PrismaClient }) {
     } catch (error) {
       sendServiceError(res, error);
     }
+  });
+
+  router.get("/:id", async (req, res) => {
+    const id = idSchema.safeParse(req.params.id);
+    if (!id.success) return notFound(res);
+
+    const book = await findBook(prisma, currentUser(res).id, id.data);
+    if (!book) return notFound(res);
+    res.json({ book: toBookResponse(book) });
+  });
+
+  router.patch("/:id", async (req, res) => {
+    const id = idSchema.safeParse(req.params.id);
+    if (!id.success) return notFound(res);
+    const changes = updateBookSchema.safeParse(req.body);
+    if (!changes.success) return invalidInput(res, changes.error);
+
+    try {
+      const book = await updateBook(prisma, currentUser(res).id, id.data, changes.data);
+      if (!book) return notFound(res);
+      res.json({ book: toBookResponse(book) });
+    } catch (error) {
+      sendServiceError(res, error);
+    }
+  });
+
+  router.delete("/:id", async (req, res) => {
+    const id = idSchema.safeParse(req.params.id);
+    if (!id.success) return notFound(res);
+
+    const deleted = await deleteBook(prisma, currentUser(res).id, id.data);
+    if (!deleted) return notFound(res);
+    res.status(204).end();
   });
 
   return router;
