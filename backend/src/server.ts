@@ -10,6 +10,6 @@ if (!databaseUrl) {
 const port = Number(process.env.PORT ?? 3000);
 const prisma = createPrismaClient(databaseUrl);
 
-createApp({ prisma }).listen(port, () => {
+createApp({ prisma, secureCookies: process.env.NODE_ENV === "production" }).listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);
 });
