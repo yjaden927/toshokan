@@ -1,6 +1,8 @@
 import cookieParser from "cookie-parser";
 import express, { type ErrorRequestHandler } from "express";
+import { requireAuth } from "./auth/middleware.js";
 import { type AuthRateLimits, authRouter } from "./auth/routes.js";
+import { booksRouter } from "./books/routes.js";
 import type { PrismaClient } from "./generated/prisma/client.js";
 
 export interface AppOptions {
@@ -26,6 +28,7 @@ export function createApp({ prisma, secureCookies = true, rateLimits }: AppOptio
   });
 
   app.use("/auth", authRouter({ prisma, secureCookies, rateLimits }));
+  app.use("/books", requireAuth(prisma), booksRouter({ prisma }));
 
   app.use(errorHandler);
 
