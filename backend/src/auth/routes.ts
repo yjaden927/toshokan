@@ -6,17 +6,17 @@ import { currentUser, requireAuth } from "./middleware.js";
 import { EmailTakenError, logIn, signUp } from "./service.js";
 import { SESSION_COOKIE, clearSessionCookie, createSession, deleteSession, setSessionCookie } from "./sessions.js";
 
-const email = z.string().trim().toLowerCase().pipe(z.email().max(254));
+const email = z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address").max(254));
 
 const signupSchema = z.object({
   email,
-  password: z.string().min(8).max(256),
+  password: z.string().min(8, "Use at least 8 characters").max(256),
   displayName: z.string().trim().max(80).default(""),
 });
 
 const loginSchema = z.object({
   email,
-  password: z.string().min(1).max(256),
+  password: z.string().min(1, "Enter your password").max(256),
 });
 
 export interface AuthRateLimits {

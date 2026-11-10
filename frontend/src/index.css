@@ -1,10 +1,83 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Newsreader Variable", ui-serif, Georgia, serif;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-field: var(--field);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-danger: var(--danger);
+
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
+/* Every text color passes WCAG AA (4.5:1) against both the page and surfaces. */
+:root {
+  --bg: #eef1f7;
+  --surface: #ffffff;
+  --sunken: rgb(28 34 48 / 0.05);
+  --field: rgb(255 255 255 / 0.7);
+  --ink: #161b28;
+  --muted: #4a5266;
+  --faint: #5f677b;
+  --line: rgb(28 34 48 / 0.09);
+  --accent: #2f4a8a;
+  --accent-soft: rgb(47 74 138 / 0.12);
+  --on-accent: #ffffff;
+  --danger: #b3261e;
+  --shadow-book: 0 1px 1px rgb(28 34 48 / 0.08), 0 10px 22px -10px rgb(28 34 48 / 0.45);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b110f;
+    --surface: #1a2320;
+    --sunken: rgb(255 255 255 / 0.05);
+    --field: rgb(255 255 255 / 0.04);
+    --ink: #edf0ea;
+    --muted: #b3bdb6;
+    --faint: #8a978f;
+    --line: rgb(255 255 255 / 0.08);
+    --accent: #93abf0;
+    --accent-soft: rgb(147 171 240 / 0.14);
+    --on-accent: #0d1220;
+    --danger: #f2877e;
+    --shadow-book: 0 1px 1px rgb(0 0 0 / 0.4), 0 12px 24px -10px rgb(0 0 0 / 0.75);
+    color-scheme: dark;
+  }
+}
+
+@utility surface {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgb(20 30 50 / 0.04), 0 8px 24px -16px rgb(20 30 50 / 0.18);
+}
+
+@layer base {
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+  }
 }
