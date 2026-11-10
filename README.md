@@ -1,10 +1,12 @@
 # Toshokan
 
-Toshokan (図書館) is Japanese for "library". It's a personal reading tracker: log the books you
-read, track what you're reading now, rate what you finish and tag everything.
+Toshokan (図書館) is Japanese for "library". 
 
-A solo rebuild of my FIU capstone project, MyLittleLibrary, engineered as a production-style
-TypeScript monorepo with a custom backend.
+This is a personal book tracking app where people can:
+- Record that they read a book
+- Note what they are currently reading
+- Give a rating of books once they have finished reading
+Helped created while creating my own FIU capstone project, MyLittleLibrary. Built as a monorepo using TypeScript in a production like environment with a custom backend.
 
 **Status:** the backend API is complete and tested. The React frontend is in progress.
 
