@@ -9,5 +9,5 @@ export function createTestPrisma() {
 }
 
 export async function resetDatabase(prisma: PrismaClient) {
-  await prisma.$executeRaw`TRUNCATE TABLE "sessions", "books", "users" CASCADE`;
+  await prisma.$executeRaw`TRUNCATE TABLE "book_tags", "tags", "sessions", "books", "users" CASCADE`;
 }

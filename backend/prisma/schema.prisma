@@ -17,6 +17,7 @@ model User {
   updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
   books        Book[]
   sessions     Session[]
+  tags         Tag[]
 
   @@map("users")
 }
@@ -46,6 +47,7 @@ model Book {
   color       String        @db.VarChar(7)
   coverUrl    String?       @map("cover_url") @db.VarChar(1000)
   coverPicked Boolean       @default(false) @map("cover_picked")
+  tags        BookTag[]
   createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -64,4 +66,27 @@ model Session {
   @@index([userId])
   @@index([expiresAt])
   @@map("sessions")
+}
+
+model Tag {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String    @db.VarChar(30)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  books     BookTag[]
+
+  @@unique([userId, name])
+  @@map("tags")
+}
+
+model BookTag {
+  bookId String @map("book_id") @db.Uuid
+  tagId  String @map("tag_id") @db.Uuid
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, tagId])
+  @@index([tagId])
+  @@map("book_tags")
 }
