@@ -49,3 +49,43 @@ export const auth = {
     request<{ user: User }>("/auth/signup", { method: "POST", body: input }).then((r) => r.user),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
 };
+
+export type Status = "want_to_read" | "reading" | "finished";
+
+export interface Book {
+  id: string;
+  title: string;
+  author: string;
+  year: number | null;
+  genre: string;
+  status: Status;
+  rating: number | null;
+  startedOn: string | null;
+  finishedOn: string | null;
+  synopsis: string;
+  notes: string;
+  color: string;
+  coverUrl: string | null;
+  coverPicked: boolean;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TagCount {
+  name: string;
+  bookCount: number;
+}
+
+export const books = {
+  list: (filters: { status?: Status | undefined; q?: string | undefined; tag?: string | undefined } = {}) => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) if (value) params.set(key, value);
+    const query = params.size ? `?${params}` : "";
+    return request<{ books: Book[] }>(`/books${query}`).then((r) => r.books);
+  },
+};
+
+export const tags = {
+  list: () => request<{ tags: TagCount[] }>("/tags").then((r) => r.tags),
+};

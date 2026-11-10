@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiError, auth, request } from "./api";
+import { ApiError, auth, books, request } from "./api";
 
 function respond(status: number, body?: unknown) {
   const fetch = vi.fn(async () => new Response(body === undefined ? null : JSON.stringify(body), { status }));
@@ -48,5 +48,23 @@ describe("request", () => {
     respond(204);
 
     await expect(auth.logout()).resolves.toBeUndefined();
+  });
+});
+
+describe("books.list", () => {
+  it("sends only the filters that are set", async () => {
+    const fetch = respond(200, { books: [] });
+
+    await books.list({ status: "reading", q: "", tag: "sci-fi" });
+
+    expect(fetch).toHaveBeenCalledWith("/api/books?status=reading&tag=sci-fi", expect.anything());
+  });
+
+  it("asks for everything when no filter is set", async () => {
+    const fetch = respond(200, { books: [] });
+
+    await books.list();
+
+    expect(fetch).toHaveBeenCalledWith("/api/books", expect.anything());
   });
 });
