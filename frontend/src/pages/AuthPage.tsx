@@ -45,7 +45,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-5 py-10">
-      <Link to="/" className="mb-10 font-serif text-2xl">
+      <Link to="/" className="mb-10 font-serif text-2xl tracking-tight">
         Toshokan
       </Link>
       <div className="surface w-full max-w-md rounded-[20px] p-8">

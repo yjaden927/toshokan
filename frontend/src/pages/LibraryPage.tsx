@@ -74,7 +74,7 @@ export function LibraryPage() {
     <main className="mx-auto max-w-6xl px-5 py-8">
       <AppHeader />
 
-      <div className="mt-10 flex flex-wrap items-end justify-between gap-4">
+      <div className="mt-14 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-serif text-4xl">Your library</h1>
           {shelf && (
@@ -94,7 +94,7 @@ export function LibraryPage() {
         />
       </div>
 
-      <nav aria-label="Reading status" className="mt-6 flex gap-1 border-b border-line">
+      <nav aria-label="Reading status" className="mt-10 flex gap-1 border-b border-line">
         {TABS.map((tab) => (
           <button
             key={tab.label}
