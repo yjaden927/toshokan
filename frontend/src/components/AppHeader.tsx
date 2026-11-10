@@ -7,7 +7,7 @@ export function AppHeader() {
 
   return (
     <header className="flex items-center justify-between">
-      <Link to="/library" className="font-serif text-2xl">
+      <Link to="/library" className="font-serif text-2xl tracking-tight">
         Toshokan
       </Link>
       <div className="flex items-center gap-3 text-sm text-muted">
