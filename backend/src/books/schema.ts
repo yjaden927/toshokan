@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Book, ReadingStatus } from "../generated/prisma/client.js";
+import type { Prisma, ReadingStatus } from "../generated/prisma/client.js";
 
 export const STATUSES = ["want_to_read", "reading", "finished"] as const;
 export type Status = (typeof STATUSES)[number];
@@ -18,6 +18,15 @@ const coverUrl = z
 
 const isoDate = z.iso.date();
 
+export const tagName = z
+  .string()
+  .transform((name) => name.trim().toLowerCase().replace(/\s+/g, " "))
+  .pipe(z.string().min(1).max(30));
+
+export const withTags = { tags: { select: { tag: { select: { name: true } } } } } as const;
+
+export type BookWithTags = Prisma.BookGetPayload<{ include: typeof withTags }>;
+
 export const bookFields = {
   title: z.string().trim().min(1).max(200),
   author: z.string().trim().min(1).max(200),
@@ -32,6 +41,10 @@ export const bookFields = {
   color: z.string().regex(/^#[0-9a-f]{6}$/, "Use a lowercase hex color like #36586b"),
   coverUrl: coverUrl.nullable(),
   coverPicked: z.boolean(),
+  tags: z
+    .array(tagName)
+    .max(10)
+    .transform((names) => [...new Set(names)]),
 };
 
 export const createBookSchema = z.object({
@@ -47,6 +60,7 @@ export const createBookSchema = z.object({
   color: bookFields.color.default("#36586b"),
   coverUrl: bookFields.coverUrl.default(null),
   coverPicked: bookFields.coverPicked.default(false),
+  tags: bookFields.tags.default([]),
 });
 
 export type BookInput = z.infer<typeof createBookSchema>;
@@ -74,11 +88,12 @@ export function normalizeBook(book: BookInput): { book: BookInput } | { error: s
 const toDate = (iso: string | null) => (iso ? new Date(`${iso}T00:00:00Z`) : null);
 const toIso = (date: Date | null) => (date ? date.toISOString().slice(0, 10) : null);
 
-export function toDbBook(book: BookInput) {
+/** The book's own columns. Tags live in their own tables and are written separately. */
+export function toDbBook({ tags: _, ...book }: BookInput) {
   return { ...book, status: toDb[book.status], startedOn: toDate(book.startedOn), finishedOn: toDate(book.finishedOn) };
 }
 
-export function fromDbBook(book: Book): BookInput {
+export function fromDbBook(book: BookWithTags): BookInput {
   return {
     title: book.title,
     author: book.author,
@@ -93,11 +108,12 @@ export function fromDbBook(book: Book): BookInput {
     color: book.color,
     coverUrl: book.coverUrl,
     coverPicked: book.coverPicked,
+    tags: book.tags.map(({ tag }) => tag.name).sort(),
   };
 }
 
 /** What the API returns: every field the client shows, and nothing it doesn't need, such as userId. */
-export function toBookResponse(book: Book) {
+export function toBookResponse(book: BookWithTags) {
   return {
     id: book.id,
     ...fromDbBook(book),
@@ -109,6 +125,7 @@ export function toBookResponse(book: Book) {
 export const listQuerySchema = z.object({
   status: z.enum(STATUSES).optional(),
   q: z.string().trim().max(200).optional(),
+  tag: tagName.optional(),
 });
 
 export { toDb as statusToDb };
