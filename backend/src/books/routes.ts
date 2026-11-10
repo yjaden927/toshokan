@@ -3,7 +3,7 @@ import { z } from "zod";
 import { currentUser } from "../auth/middleware.js";
 import type { PrismaClient } from "../generated/prisma/client.js";
 import { bookFields, createBookSchema, listQuerySchema, toBookResponse } from "./schema.js";
-import { DuplicateBookError, InvalidBookError, createBook, deleteBook, findBook, listBooks, updateBook } from "./service.js";
+import { DuplicateBookError, InvalidBookError, createBook, deleteBook, findBook, listBooks, listTags, updateBook } from "./service.js";
 
 const updateBookSchema = z.object(bookFields).partial().strict();
 const idSchema = z.uuid();
@@ -82,6 +82,16 @@ export function booksRouter({ prisma }: { prisma: PrismaClient }) {
     const deleted = await deleteBook(prisma, currentUser(res).id, id.data);
     if (!deleted) return notFound(res);
     res.status(204).end();
+  });
+
+  return router;
+}
+
+export function tagsRouter({ prisma }: { prisma: PrismaClient }) {
+  const router = Router();
+
+  router.get("/", async (_req, res) => {
+    res.json({ tags: await listTags(prisma, currentUser(res).id) });
   });
 
   return router;
