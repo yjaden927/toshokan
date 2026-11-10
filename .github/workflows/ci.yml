@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: toshokan
+          POSTGRES_PASSWORD: toshokan
+          POSTGRES_DB: toshokan_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U toshokan -d toshokan_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://toshokan:toshokan@localhost:5432/toshokan_test
+      TEST_DATABASE_URL: postgresql://toshokan:toshokan@localhost:5432/toshokan_test
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run db:generate -w backend
+      - run: npm run typecheck -w backend
+      - run: npm run test -w backend
+      - run: npm run build -w backend
+      - run: npm run lint -w frontend
+      - run: npm run build -w frontend
