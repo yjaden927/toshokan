@@ -18,8 +18,12 @@ function luminance(hex: string) {
  * reads on that color. Type is sized in container units so it scales with the cover.
  */
 export function Cover({ book, className }: { book: Pick<Book, "title" | "author" | "color" | "coverUrl">; className?: string }) {
-  const [failed, setFailed] = useState(false);
-  const showImage = Boolean(book.coverUrl) && !failed;
+  // Not every Google Books volume has a large scan, so a failed zoom=3 image retries at zoom=1
+  // before falling back to the typeset cover.
+  const [failed, setFailed] = useState<string[]>([]);
+  const candidates = book.coverUrl ? [book.coverUrl, book.coverUrl.replace("&zoom=3", "&zoom=1")] : [];
+  const src = candidates.find((url) => !failed.includes(url));
+  const showImage = src !== undefined;
   const ink = luminance(book.color) > 0.35 ? "#1c1d22" : "#f5f1e8";
 
   return (
@@ -28,7 +32,7 @@ export function Cover({ book, className }: { book: Pick<Book, "title" | "author"
       style={{ backgroundColor: book.color }}
     >
       {showImage ? (
-        <img src={book.coverUrl ?? ""} alt="" loading="lazy" onError={() => setFailed(true)} className="absolute inset-0 size-full object-cover" />
+        <img src={src} alt="" loading="lazy" onError={() => setFailed((f) => [...f, src])} className="absolute inset-0 size-full object-cover" />
       ) : (
         <div className="absolute inset-x-[11%] bottom-[9%] top-[11%] flex flex-col justify-between" style={{ color: ink }}>
           <p className="font-serif text-[12cqw] leading-[1.08] text-balance">{book.title}</p>

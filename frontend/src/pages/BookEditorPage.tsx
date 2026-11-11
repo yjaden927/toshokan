@@ -1,6 +1,8 @@
 import clsx from "clsx";
 import { type FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { CatalogSearch } from "../books/CatalogSearch";
+import { CoverPicker } from "../books/CoverPicker";
 import { type BookForm, bindingFor, emptyForm, formFromBook, toBookInput } from "../books/form";
 import { AppHeader } from "../components/AppHeader";
 import { Cover } from "../components/Cover";
@@ -30,6 +32,7 @@ export function BookEditorPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[] | undefined>>({});
   const [busy, setBusy] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [pickingCover, setPickingCover] = useState(false);
 
   useEffect(() => {
     if (isNew) return;
@@ -109,6 +112,39 @@ export function BookEditorPage() {
       </Link>
       <h1 className="mt-3 font-serif text-4xl">{isNew ? "Add a book" : "Edit book"}</h1>
 
+      {isNew && (
+        <div className="mt-8">
+          <CatalogSearch
+            onPick={(found) =>
+              setForm((f) => ({
+                ...f,
+                title: found.title,
+                author: found.author,
+                year: found.year?.toString() ?? "",
+                genre: found.genre === "Other" ? "" : found.genre,
+                coverUrl: found.coverUrl,
+                coverPicked: false,
+              }))
+            }
+          />
+        </div>
+      )}
+
+      {pickingCover && (
+        <div className="mt-8">
+          <CoverPicker
+            title={form.title.trim()}
+            author={form.author.trim()}
+            current={form.coverUrl}
+            onPick={(coverUrl) => {
+              setForm((f) => ({ ...f, coverUrl, coverPicked: true }));
+              setPickingCover(false);
+            }}
+            onClose={() => setPickingCover(false)}
+          />
+        </div>
+      )}
+
       <form onSubmit={save} noValidate className="mt-8 grid gap-10 md:grid-cols-[10rem_1fr]">
         <div>
           <Cover
@@ -120,15 +156,26 @@ export function BookEditorPage() {
             }}
             className="w-40"
           />
-          {form.coverUrl && (
+          <div className="mt-3 flex flex-col items-start gap-1.5">
             <button
               type="button"
-              onClick={() => setForm((f) => ({ ...f, coverUrl: null, coverPicked: false }))}
-              className="mt-3 text-xs text-muted hover:text-ink"
+              disabled={!form.title.trim() || !form.author.trim()}
+              title={form.title.trim() && form.author.trim() ? undefined : "Add the title and author first"}
+              onClick={() => setPickingCover(true)}
+              className="text-xs font-medium text-accent hover:underline disabled:text-faint disabled:no-underline"
             >
-              Remove cover
+              Choose cover
             </button>
-          )}
+            {form.coverUrl && (
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, coverUrl: null, coverPicked: false }))}
+                className="text-xs text-muted hover:text-ink"
+              >
+                Remove cover
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-5">
