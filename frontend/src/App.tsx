@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 import { AuthProvider } from "./auth/AuthProvider";
 import { useAuth } from "./auth/context";
 import { AuthPage } from "./pages/AuthPage";
+import { BookEditorPage } from "./pages/BookEditorPage";
 import { LibraryPage } from "./pages/LibraryPage";
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -26,6 +27,22 @@ export function App() {
             element={
               <RequireAuth>
                 <LibraryPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/books/new"
+            element={
+              <RequireAuth>
+                <BookEditorPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/books/:id"
+            element={
+              <RequireAuth>
+                <BookEditorPage />
               </RequireAuth>
             }
           />

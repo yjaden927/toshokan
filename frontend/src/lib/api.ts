@@ -8,13 +8,16 @@ export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly fields: Record<string, string[] | undefined>;
+  /** The server's explanation, when it sends one. */
+  readonly detail: string;
 
-  constructor(status: number, code: string, fields: Record<string, string[] | undefined> = {}) {
+  constructor(status: number, code: string, fields: Record<string, string[] | undefined> = {}, detail = "") {
     super(`${status} ${code}`);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
     this.fields = fields;
+    this.detail = detail;
   }
 }
 
@@ -35,8 +38,8 @@ export async function request<T>(path: string, options: { method?: string; body?
 
   const data: unknown = await res.json().catch(() => null);
   if (!res.ok) {
-    const body = (data ?? {}) as { error?: string; fields?: Record<string, string[]> };
-    throw new ApiError(res.status, body.error ?? "unknown_error", body.fields);
+    const body = (data ?? {}) as { error?: string; fields?: Record<string, string[]>; message?: string };
+    throw new ApiError(res.status, body.error ?? "unknown_error", body.fields, body.message);
   }
   return data as T;
 }
@@ -72,6 +75,9 @@ export interface Book {
   updatedAt: string;
 }
 
+/** What the client sends to create or update a book. The synopsis isn't edited in the app yet. */
+export type BookInput = Omit<Book, "id" | "createdAt" | "updatedAt" | "synopsis">;
+
 export interface TagCount {
   name: string;
   bookCount: number;
@@ -84,6 +90,11 @@ export const books = {
     const query = params.size ? `?${params}` : "";
     return request<{ books: Book[] }>(`/books${query}`).then((r) => r.books);
   },
+  get: (id: string) => request<{ book: Book }>(`/books/${encodeURIComponent(id)}`).then((r) => r.book),
+  create: (input: BookInput) => request<{ book: Book }>("/books", { method: "POST", body: input }).then((r) => r.book),
+  update: (id: string, changes: Partial<BookInput>) =>
+    request<{ book: Book }>(`/books/${encodeURIComponent(id)}`, { method: "PATCH", body: changes }).then((r) => r.book),
+  remove: (id: string) => request<void>(`/books/${encodeURIComponent(id)}`, { method: "DELETE" }),
 };
 
 export const tags = {

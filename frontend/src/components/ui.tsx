@@ -1,31 +1,20 @@
 import clsx from "clsx";
-import { type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, useId } from "react";
-
-type Variant = "primary" | "secondary" | "ghost";
-
-const VARIANTS: Record<Variant, string> = {
-  primary: "bg-accent text-on-accent hover:brightness-110 active:brightness-95",
-  secondary: "border border-line bg-surface text-ink hover:bg-sunken",
-  ghost: "text-muted hover:bg-sunken hover:text-ink",
-};
+import {
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type TextareaHTMLAttributes,
+  useId,
+} from "react";
+import { type ButtonVariant, buttonClass } from "./buttonStyles";
 
 export function Button({
   variant = "primary",
   type = "button",
   className,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
-  return (
-    <button
-      type={type}
-      className={clsx(
-        "inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition duration-200 ease-smooth disabled:pointer-events-none disabled:opacity-50",
-        VARIANTS[variant],
-        className,
-      )}
-      {...props}
-    />
-  );
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) {
+  return <button type={type} className={buttonClass(variant, className)} {...props} />;
 }
 
 export function Field({
@@ -57,14 +46,13 @@ export function Field({
   );
 }
 
+const fieldClass =
+  "w-full rounded-xl border border-line bg-field px-3.5 text-sm text-ink placeholder:text-faint transition duration-200 focus:border-accent/60 focus:outline-none focus:ring-4 focus:ring-accent/15 aria-invalid:border-danger";
+
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      className={clsx(
-        "h-11 w-full rounded-xl border border-line bg-field px-3.5 text-sm text-ink placeholder:text-faint transition duration-200 focus:border-accent/60 focus:outline-none focus:ring-4 focus:ring-accent/15 aria-invalid:border-danger",
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <input className={clsx("h-11", fieldClass, className)} {...props} />;
+}
+
+export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea className={clsx("min-h-28 py-2.5", fieldClass, className)} {...props} />;
 }

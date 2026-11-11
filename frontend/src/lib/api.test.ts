@@ -68,3 +68,13 @@ describe("books.list", () => {
     expect(fetch).toHaveBeenCalledWith("/api/books", expect.anything());
   });
 });
+
+describe("ApiError detail", () => {
+  it("keeps the server's explanation", async () => {
+    respond(400, { error: "invalid_input", message: "finishedOn must be on or after startedOn" });
+
+    await expect(request("/books", { method: "POST", body: {} })).rejects.toMatchObject({
+      detail: "finishedOn must be on or after startedOn",
+    });
+  });
+});

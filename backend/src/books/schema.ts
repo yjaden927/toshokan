@@ -28,8 +28,8 @@ export const withTags = { tags: { select: { tag: { select: { name: true } } } } 
 export type BookWithTags = Prisma.BookGetPayload<{ include: typeof withTags }>;
 
 export const bookFields = {
-  title: z.string().trim().min(1).max(200),
-  author: z.string().trim().min(1).max(200),
+  title: z.string().trim().min(1, "Enter the title").max(200),
+  author: z.string().trim().min(1, "Enter the author").max(200),
   year: z.number().int().min(1).max(9999).nullable(),
   genre: z.string().trim().min(1).max(40),
   status: z.enum(STATUSES),
