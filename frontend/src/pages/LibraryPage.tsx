@@ -1,7 +1,8 @@
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { AppHeader } from "../components/AppHeader";
+import { buttonClass } from "../components/buttonStyles";
 import { Cover } from "../components/Cover";
 import { Input } from "../components/ui";
 import { type Book, type Status, type TagCount, books as booksApi, tags as tagsApi } from "../lib/api";
@@ -84,14 +85,19 @@ export function LibraryPage() {
             </p>
           )}
         </div>
-        <Input
-          type="search"
-          aria-label="Search by title or author"
-          placeholder="Search title or author"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-72"
-        />
+        <div className="flex w-full gap-3 sm:w-auto">
+          <Input
+            type="search"
+            aria-label="Search by title or author"
+            placeholder="Search title or author"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="sm:w-72"
+          />
+          <Link to="/books/new" className={buttonClass("primary", "shrink-0")}>
+            Add a book
+          </Link>
+        </div>
       </div>
 
       <nav aria-label="Reading status" className="mt-10 flex gap-1 border-b border-line">
@@ -136,20 +142,22 @@ export function LibraryPage() {
         ) : shelf === null ? (
           <p className="text-muted">Loading your shelf…</p>
         ) : shelf.length === 0 ? (
-          <p className="text-muted">{filtered ? "No books match these filters." : "Your shelf is empty. Books you add will show up here."}</p>
+          <p className="text-muted">{filtered ? "No books match these filters." : "Your shelf is empty. Add a book to get started."}</p>
         ) : (
           <ul className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {shelf.map((book) => (
               <li key={book.id}>
-                <Cover book={book} />
-                <p className="mt-3 line-clamp-2 text-sm font-medium leading-snug">{book.title}</p>
-                <p className="mt-0.5 truncate text-xs text-muted">{book.author}</p>
-                {book.rating && (
-                  <p className="mt-1 text-xs text-accent" aria-label={`Rated ${book.rating} out of 5`}>
-                    {"★".repeat(book.rating)}
-                    <span className="text-faint">{"★".repeat(5 - book.rating)}</span>
-                  </p>
-                )}
+                <Link to={`/books/${book.id}`} className="group block">
+                  <Cover book={book} className="transition-transform duration-200 ease-smooth group-hover:-translate-y-1" />
+                  <p className="mt-3 line-clamp-2 text-sm font-medium leading-snug">{book.title}</p>
+                  <p className="mt-0.5 truncate text-xs text-muted">{book.author}</p>
+                  {book.rating && (
+                    <p className="mt-1 text-xs text-accent" aria-label={`Rated ${book.rating} out of 5`}>
+                      {"★".repeat(book.rating)}
+                      <span className="text-faint">{"★".repeat(5 - book.rating)}</span>
+                    </p>
+                  )}
+                </Link>
               </li>
             ))}
           </ul>
